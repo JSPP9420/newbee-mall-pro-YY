@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: newbee-mall-pro-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: newbee123
+      MYSQL_DATABASE: newbee_mall_pro
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
