@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 风格与原项目 AdminMapper.xml 保持一致 -->
+<mapper namespace="ltd.newbee.mall.mapper.AdminTokenMapper">
+  <resultMap id="BaseResultMap" type="ltd.newbee.mall.entity.AdminToken">
+    <id column="admin_token_id" jdbcType="INTEGER" property="adminTokenId" />
+    <result column="token" jdbcType="VARCHAR" property="token" />
+    <result column="admin_user_id" jdbcType="INTEGER" property="adminUserId" />
+    <result column="expires_at" jdbcType="TIMESTAMP" property="expiresAt" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    admin_token_id, token, admin_user_id, expires_at, create_time
+  </sql>
+
+  <insert id="insert" parameterType="ltd.newbee.mall.entity.AdminToken"
+          useGeneratedKeys="true" keyProperty="adminTokenId">
+    insert into tb_newbee_mall_admin_token (token, admin_user_id, expires_at, create_time)
+    values (#{token,jdbcType=VARCHAR}, #{adminUserId,jdbcType=INTEGER},
+            #{expiresAt,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectByToken" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from tb_newbee_mall_admin_token
+    where token = #{token,jdbcType=VARCHAR}
+  </select>
+
+  <delete id="deleteByToken" parameterType="java.lang.String">
+    delete from tb_newbee_mall_admin_token
+    where token = #{token,jdbcType=VARCHAR}
+  </delete>
+</mapper>

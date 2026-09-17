@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ltd.newbee.mall.mapper.AdminPermissionMapper">
+    <resultMap id="PermissionResultMap" type="ltd.newbee.mall.entity.AdminPermission">
+        <id column="permission_id" property="permissionId" />
+        <result column="permission_code" property="permissionCode" />
+        <result column="permission_name" property="permissionName" />
+        <result column="http_method" property="httpMethod" />
+        <result column="request_path" property="requestPath" />
+        <result column="enabled" property="enabled" />
+    </resultMap>
+
+    <select id="findByAdminUserId" resultMap="PermissionResultMap">
+        select p.permission_id, p.permission_code, p.permission_name,
+               p.http_method, p.request_path, p.enabled
+        from admin_permission p
+        inner join admin_role_permission rp on rp.permission_id = p.permission_id
+        inner join admin_user_role ur on ur.role_id = rp.role_id
+        inner join admin_role r on r.role_id = ur.role_id
+        where ur.admin_user_id = #{adminUserId}
+          and p.enabled = 1
+          and r.enabled = 1
+    </select>
+</mapper>

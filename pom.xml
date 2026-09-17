@@ -1,80 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<!--  基于原项目 newbee-mall 的 pom，仅改名，依赖保持一致  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.newbee</groupId>
-    <artifactId>newbee-mall-pro</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <groupId>ltd.newbee.mall</groupId>
+    <artifactId>newbee-mall-pro</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <name>newbee-mall-pro</name>
-    <description>学习版电商后端 - 分步重写计划 M0 骨架</description>
+    <description>newbee-mall-pro：在原项目基础上做前后端分离（REST API）改造的学习项目。包名、类名与原项目保持一致，便于对照学习。</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.0</version>
-        <relativePath/>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
-        <mybatis-plus.version>3.5.17</mybatis-plus.version>
-        <knife4j.version>4.5.0</knife4j.version>
+        <mybatis.start.version>3.0.4</mybatis.start.version>
+        <mybatis.version>3.5.17</mybatis.version>
+        <hutool-captcha.version>5.8.7</hutool-captcha.version>
     </properties>
 
     <dependencies>
-        <!-- Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- 参数校验 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        <!-- MyBatis-Plus (Spring Boot 3) -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-            <version>${mybatis-plus.version}</version>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-core</artifactId>
         </dependency>
-        <!-- MP 分页插件（3.5.9+ 拆为可选依赖，需手动引入） -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-jsqlparser</artifactId>
-            <version>${mybatis-plus.version}</version>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
-        <!-- MySQL 驱动 -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>${mybatis.start.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
+        </dependency>
+        <!-- 验证码 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-captcha</artifactId>
+            <version>${hutool-captcha.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- BCrypt 密码加密（不引入完整 Spring Security，只用 crypto 模块） -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-        </dependency>
-        <!-- Knife4j (OpenAPI3 Jakarta) -->
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-            <version>${knife4j.version}</version>
-        </dependency>
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- 测试 -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -83,6 +88,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <failIfNoTests>true</failIfNoTests>
+                </configuration>
             </plugin>
         </plugins>
     </build>

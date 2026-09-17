@@ -1,0 +1,19 @@
+<!-- Copyright (c) 2019-2020 十三 all rights reserved. -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div class="lfnav fl" th:fragment="sidebar-fragment">
+    <div class="nav_title">个人中心</div>
+    <div class="title_list">
+        <ul>
+            <li><a th:href="@{'/personal'}" th:class="${path=='personal'?'active':''}">个人信息</a></li>
+            <li><a th:href="@{'/orders'}" th:class="${path=='orders'?'active':''}">我的订单</a></li>
+            <li>
+                <form th:action="@{/logout}" method="post">
+                    <input type="hidden" name="_csrf" th:value="${_csrfToken}">
+        <button type="submit" class="btn btn-link">退出登录</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+</html>

@@ -1,4 +1,0 @@
-# 开发环境配置（与默认 application.yml 一致，预留扩展点）
-spring:
-  thymeleaf:
-    cache: false
