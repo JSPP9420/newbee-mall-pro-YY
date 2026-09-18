@@ -8,9 +8,9 @@
  */
 package ltd.newbee.mall.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.entity.Admin;
 import ltd.newbee.mall.controller.vo.AdminUserProfileVO;
 import ltd.newbee.mall.entity.AdminToken;
@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
     /** Token 有效期：7 天 */
@@ -31,11 +32,6 @@ public class AdminServiceImpl implements AdminService {
 
     private final AdminMapper adminMapper;
     private final AdminTokenMapper adminTokenMapper;
-
-    public AdminServiceImpl(AdminMapper adminMapper, AdminTokenMapper adminTokenMapper) {
-        this.adminMapper = adminMapper;
-        this.adminTokenMapper = adminTokenMapper;
-    }
 
     @Override
     public Admin login(String userName, String password) {
@@ -98,7 +94,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminLoginVO loginAndIssueToken(AdminUserLoginDTO dto) {
+    public String loginAndIssueToken(AdminUserLoginDTO dto) {
         // 复用原有校验逻辑（MD5 + locked=0 过滤），不改动存量行为
         Admin admin = login(dto.getUserName(), dto.getPassword());
         if (admin == null) {
@@ -115,7 +111,7 @@ public class AdminServiceImpl implements AdminService {
         adminToken.setCreateTime(new Date());
         adminTokenMapper.insert(adminToken);
 
-        return AdminLoginVO.of(token, getAdminUserProfileById(admin.getAdminUserId()));
+        return token;
     }
 
     @Override

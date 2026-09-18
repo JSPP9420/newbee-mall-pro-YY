@@ -9,7 +9,6 @@
 package ltd.newbee.mall.service;
 
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.controller.vo.AdminUserProfileVO;
 import ltd.newbee.mall.entity.Admin;
 
@@ -19,9 +18,9 @@ public interface AdminService {
 
     /**
      * pro 版新增：REST 登录，校验通过后签发 Token
-     * 复用原有 MD5 校验逻辑（login 方法），不改动存量行为
+     * 只返回 token 字符串，前端需要用户资料时调 /info 接口
      */
-    AdminLoginVO loginAndIssueToken(AdminUserLoginDTO dto);
+    String loginAndIssueToken(AdminUserLoginDTO dto);
 
     /**
      * pro 版新增：REST 登出，删除 Token
