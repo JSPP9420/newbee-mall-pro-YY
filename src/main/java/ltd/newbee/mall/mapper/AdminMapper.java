@@ -8,13 +8,13 @@
  */
 package ltd.newbee.mall.mapper;
 
-import ltd.newbee.mall.entity.Admin;
+import ltd.newbee.mall.entity.AdminUser;
 import org.apache.ibatis.annotations.Param;
 
 public interface AdminMapper {
-    int insert(Admin record);
+    int insert(AdminUser record);
 
-    int insertSelective(Admin record);
+    int insertSelective(AdminUser record);
 
     /**
      * 登陆方法
@@ -23,11 +23,11 @@ public interface AdminMapper {
      * @param password
      * @return
      */
-    Admin login(@Param("userName") String userName, @Param("password") String password);
+    AdminUser login(@Param("userName") String userName, @Param("password") String password);
 
-    Admin selectByPrimaryKey(Integer adminUserId);
+    AdminUser selectByPrimaryKey(Integer adminUserId);
 
-    int updateByPrimaryKeySelective(Admin record);
+    int updateByPrimaryKeySelective(AdminUser record);
 
-    int updateByPrimaryKey(Admin record);
+    int updateByPrimaryKey(AdminUser record);
 }

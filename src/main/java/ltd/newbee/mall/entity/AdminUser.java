@@ -11,7 +11,7 @@ package ltd.newbee.mall.entity;
 import lombok.Data;
 
 @Data
-public class Admin {
+public class AdminUser {
     /**
      *
      */

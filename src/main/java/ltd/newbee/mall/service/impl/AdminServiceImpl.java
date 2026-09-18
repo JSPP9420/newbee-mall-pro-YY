@@ -11,8 +11,8 @@ package ltd.newbee.mall.service.impl;
 import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.entity.Admin;
-import ltd.newbee.mall.controller.vo.AdminUserProfileVO;
+import ltd.newbee.mall.entity.AdminUser;
+import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
 import ltd.newbee.mall.entity.AdminToken;
 import ltd.newbee.mall.mapper.AdminMapper;
 import ltd.newbee.mall.mapper.AdminTokenMapper;
@@ -34,23 +34,23 @@ public class AdminServiceImpl implements AdminService {
     private final AdminTokenMapper adminTokenMapper;
 
     @Override
-    public Admin login(String userName, String password) {
+    public AdminUser login(String userName, String password) {
         String passwordMd5 = MD5Util.MD5Encode(password, "UTF-8");
         return adminMapper.login(userName, passwordMd5);
     }
 
     @Override
-    public Admin getUserDetailById(Integer adminUserId) {
+    public AdminUser getUserDetailById(Integer adminUserId) {
         return adminMapper.selectByPrimaryKey(adminUserId);
     }
 
     @Override
-    public AdminUserProfileVO getAdminUserProfileById(Integer adminUserId) {
-        Admin admin = adminMapper.selectByPrimaryKey(adminUserId);
+    public AdminUserLoginVO getAdminUserProfileById(Integer adminUserId) {
+        AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
         if (admin == null) {
             return null;
         }
-        AdminUserProfileVO profile = new AdminUserProfileVO();
+        AdminUserLoginVO profile = new AdminUserLoginVO();
         profile.setAdminUserId(admin.getAdminUserId());
         profile.setLoginUserName(admin.getLoginUserName());
         profile.setNickName(admin.getNickName());
@@ -59,7 +59,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Boolean updatePassword(Integer adminUserId, String originalPassword, String newPassword) {
-        Admin admin = adminMapper.selectByPrimaryKey(adminUserId);
+        AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
         //当前用户非空才可以进行更改
         if (admin != null) {
             String originalPasswordMd5 = MD5Util.MD5Encode(originalPassword, "UTF-8");
@@ -79,7 +79,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Boolean updateName(Integer adminUserId, String loginUserName, String nickName) {
-        Admin admin = adminMapper.selectByPrimaryKey(adminUserId);
+        AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
         //当前用户非空才可以进行更改
         if (admin != null) {
             //设置新名称并修改
@@ -96,7 +96,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public String loginAndIssueToken(AdminUserLoginDTO dto) {
         // 复用原有校验逻辑（MD5 + locked=0 过滤），不改动存量行为
-        Admin admin = login(dto.getUserName(), dto.getPassword());
+        AdminUser admin = login(dto.getUserName(), dto.getPassword());
         if (admin == null) {
             // 与原版页面登录的提示语保持一致
             throw new NewBeeMallException("登录失败，请检查用户名和密码");

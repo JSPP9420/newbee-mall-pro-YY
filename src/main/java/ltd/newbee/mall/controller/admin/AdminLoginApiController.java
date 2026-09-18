@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.controller.vo.AdminUserProfileVO;
+import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
 import ltd.newbee.mall.service.AdminService;
 import ltd.newbee.mall.util.Result;
 import ltd.newbee.mall.util.ResultGenerator;
@@ -51,7 +51,7 @@ public class AdminLoginApiController {
 
     /** 当前登录管理员信息：Token 拦截器校验通过后，adminUserId 已放入 request */
     @GetMapping("/info")
-    public Result<AdminUserProfileVO> info(HttpServletRequest request) {
+    public Result<AdminUserLoginVO> info(HttpServletRequest request) {
         Integer adminUserId = (Integer) request.getAttribute("adminUserId");
         if (adminUserId == null) {
             throw new NewBeeMallException("未登录");

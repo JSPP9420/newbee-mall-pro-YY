@@ -11,12 +11,11 @@ package ltd.newbee.mall.controller.admin;
 import cn.hutool.captcha.ShearCaptcha;
 import jakarta.annotation.Resource;
 import ltd.newbee.mall.common.ServiceResultEnum;
-import ltd.newbee.mall.controller.vo.AdminUserProfileVO;
-import ltd.newbee.mall.entity.Admin;
+import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
+import ltd.newbee.mall.entity.AdminUser;
 import ltd.newbee.mall.security.CsrfTokenService;
 import ltd.newbee.mall.service.AdminService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -73,7 +72,7 @@ public class AdminController {
             session.setAttribute("errorMsg", "验证码错误");
             return "admin/login";
         }
-        Admin admin = adminService.login(userName, password);
+        AdminUser admin = adminService.login(userName, password);
         if (admin != null) {
             request.changeSessionId();
             CsrfTokenService.rotateToken(session);
@@ -91,7 +90,7 @@ public class AdminController {
     @GetMapping("/profile")
     public String profile(HttpServletRequest request) {
         Integer adminUserId = (int) request.getSession().getAttribute("adminUserId");
-        AdminUserProfileVO adminUser = adminService.getAdminUserProfileById(adminUserId);
+        AdminUserLoginVO adminUser = adminService.getAdminUserProfileById(adminUserId);
         if (adminUser == null) {
             return "admin/login";
         }

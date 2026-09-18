@@ -9,12 +9,12 @@
 package ltd.newbee.mall.service;
 
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.controller.vo.AdminUserProfileVO;
-import ltd.newbee.mall.entity.Admin;
+import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
+import ltd.newbee.mall.entity.AdminUser;
 
 public interface AdminService {
 
-    Admin login(String userName, String password);
+    AdminUser login(String userName, String password);
 
     /**
      * pro 版新增：REST 登录，校验通过后签发 Token
@@ -33,9 +33,9 @@ public interface AdminService {
      * @param adminUserId
      * @return
      */
-    Admin getUserDetailById(Integer adminUserId);
+    AdminUser getUserDetailById(Integer adminUserId);
 
-    AdminUserProfileVO getAdminUserProfileById(Integer adminUserId);
+    AdminUserLoginVO getAdminUserProfileById(Integer adminUserId);
 
     /**
      * 修改当前登录用户的密码

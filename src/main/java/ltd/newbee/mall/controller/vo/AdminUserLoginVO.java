@@ -3,7 +3,7 @@ package ltd.newbee.mall.controller.vo;
 import lombok.Data;
 
 @Data
-public class AdminUserProfileVO {
+public class AdminUserLoginVO {
 
     private Integer adminUserId;
     private String loginUserName;
