@@ -3,6 +3,7 @@ package ltd.newbee.mall.interceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.entity.AdminToken;
 import ltd.newbee.mall.mapper.AdminTokenMapper;
 import ltd.newbee.mall.util.Result;
@@ -24,15 +25,11 @@ import java.util.Date;
  * （后续可升级为 ThreadLocal 上下文，不必每次 request.getAttribute）
  */
 @Component
+@RequiredArgsConstructor
 public class AdminTokenInterceptor implements HandlerInterceptor {
 
     private final AdminTokenMapper adminTokenMapper;
     private final ObjectMapper objectMapper;
-
-    public AdminTokenInterceptor(AdminTokenMapper adminTokenMapper, ObjectMapper objectMapper) {
-        this.adminTokenMapper = adminTokenMapper;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

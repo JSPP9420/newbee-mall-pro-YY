@@ -11,7 +11,7 @@ package ltd.newbee.mall.controller.admin;
 import cn.hutool.captcha.ShearCaptcha;
 import jakarta.annotation.Resource;
 import ltd.newbee.mall.common.ServiceResultEnum;
-import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
+import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.entity.AdminUser;
 import ltd.newbee.mall.security.CsrfTokenService;
 import ltd.newbee.mall.service.AdminService;
@@ -90,7 +90,7 @@ public class AdminController {
     @GetMapping("/profile")
     public String profile(HttpServletRequest request) {
         Integer adminUserId = (int) request.getSession().getAttribute("adminUserId");
-        AdminUserLoginVO adminUser = adminService.getAdminUserProfileById(adminUserId);
+        AdminLoginVO adminUser = adminService.getAdminUserById(adminUserId);
         if (adminUser == null) {
             return "admin/login";
         }

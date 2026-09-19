@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
 import ltd.newbee.mall.entity.AdminUser;
-import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
+import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.entity.AdminToken;
 import ltd.newbee.mall.mapper.AdminMapper;
 import ltd.newbee.mall.mapper.AdminTokenMapper;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
-    /** Token 有效期：7 天 */
+    /** 为设置 Token 有效期：7 天 */
     private static final long TOKEN_EXPIRE_HOURS = 7 * 24L;
 
     private final AdminMapper adminMapper;
@@ -45,16 +45,16 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminUserLoginVO getAdminUserProfileById(Integer adminUserId) {
+    public AdminLoginVO getAdminUserById(Integer adminUserId) {
         AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
         if (admin == null) {
             return null;
         }
-        AdminUserLoginVO profile = new AdminUserLoginVO();
-        profile.setAdminUserId(admin.getAdminUserId());
-        profile.setLoginUserName(admin.getLoginUserName());
-        profile.setNickName(admin.getNickName());
-        return profile;
+        AdminLoginVO adminLoginVO = new AdminLoginVO();
+        adminLoginVO.setAdminUserId(admin.getAdminUserId());
+        adminLoginVO.setLoginUserName(admin.getLoginUserName());
+        adminLoginVO.setNickName(admin.getNickName());
+        return adminLoginVO;
     }
 
     @Override
@@ -96,8 +96,8 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public String loginAndIssueToken(AdminUserLoginDTO dto) {
         // 复用原有校验逻辑（MD5 + locked=0 过滤），不改动存量行为
-        AdminUser admin = login(dto.getUserName(), dto.getPassword());
-        if (admin == null) {
+        AdminUser adminUser = login(dto.getUserName(), dto.getPassword());
+        if (adminUser == null) {
             // 与原版页面登录的提示语保持一致
             throw new NewBeeMallException("登录失败，请检查用户名和密码");
         }
@@ -106,7 +106,7 @@ public class AdminServiceImpl implements AdminService {
         String token = UUID.randomUUID().toString().replace("-", "");
         AdminToken adminToken = new AdminToken();
         adminToken.setToken(token);
-        adminToken.setAdminUserId(admin.getAdminUserId());
+        adminToken.setAdminUserId(adminUser.getAdminUserId());
         adminToken.setExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRE_HOURS * 3600 * 1000));
         adminToken.setCreateTime(new Date());
         adminTokenMapper.insert(adminToken);
@@ -114,6 +114,8 @@ public class AdminServiceImpl implements AdminService {
         return token;
     }
 
+    //TODO此处以后看情况可以考虑一下逻辑删除，
+    // 不过数据库登录与登出在mysql数据库有“踢人下线”的逻辑，后期TT作者思考一下
     @Override
     public void logoutByToken(String token) {
         adminTokenMapper.deleteByToken(token);

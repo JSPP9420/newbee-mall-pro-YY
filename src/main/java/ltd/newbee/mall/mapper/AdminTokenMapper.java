@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface AdminTokenMapper {
 
-    int insert(AdminToken record);
+    int insert(AdminToken adminToken);
 
     AdminToken selectByToken(@Param("token") String token);
 

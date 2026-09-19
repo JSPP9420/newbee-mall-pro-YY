@@ -9,7 +9,7 @@
 package ltd.newbee.mall.service;
 
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
+import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.entity.AdminUser;
 
 public interface AdminService {
@@ -35,7 +35,7 @@ public interface AdminService {
      */
     AdminUser getUserDetailById(Integer adminUserId);
 
-    AdminUserLoginVO getAdminUserProfileById(Integer adminUserId);
+    AdminLoginVO getAdminUserById(Integer adminUserId);
 
     /**
      * 修改当前登录用户的密码

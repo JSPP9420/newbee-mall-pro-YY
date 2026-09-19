@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
-import ltd.newbee.mall.controller.vo.AdminUserLoginVO;
+import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.service.AdminService;
 import ltd.newbee.mall.util.Result;
 import ltd.newbee.mall.util.ResultGenerator;
@@ -32,7 +32,7 @@ public class AdminLoginApiController {
 
     private final AdminService adminService;
 
-    /** 登录：校验通过只返回 token，需要用户资料调 /info */
+    /** 登录：校验通过只返回 token，需要管理员信息调 /info */
     @PostMapping("/login")
     public Result<String> login(@Valid @RequestBody AdminUserLoginDTO dto) {
         String token = adminService.loginAndIssueToken(dto);
@@ -51,12 +51,12 @@ public class AdminLoginApiController {
 
     /** 当前登录管理员信息：Token 拦截器校验通过后，adminUserId 已放入 request */
     @GetMapping("/info")
-    public Result<AdminUserLoginVO> info(HttpServletRequest request) {
+    public Result<AdminLoginVO> info(HttpServletRequest request) {
         Integer adminUserId = (Integer) request.getAttribute("adminUserId");
         if (adminUserId == null) {
             throw new NewBeeMallException("未登录");
         }
-        return ResultGenerator.genSuccessResult(adminService.getAdminUserProfileById(adminUserId));
+        return ResultGenerator.genSuccessResult(adminService.getAdminUserById(adminUserId));
     }
 
     /**
