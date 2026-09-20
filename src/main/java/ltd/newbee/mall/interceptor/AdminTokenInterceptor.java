@@ -30,12 +30,16 @@ public class AdminTokenInterceptor implements HandlerInterceptor {
 
     private final AdminTokenMapper adminTokenMapper;
     private final ObjectMapper objectMapper;
-
+//此方法被Spring mvc框架调用，即DispatcherServlet,它在调用我，若为false，则不放行且不能进入控制层。
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String auth = request.getHeader("Authorization");
         String token = null;
+        /**
+         *Authorization: Bearer <token> 是 HTTP 官方标准的认证头格式：Bearer 声明凭据类型是“持票人令牌”，token 是凭据本体，
+         *企业遵守它，换来的是工具链全兼容、对接零解释。
+         */
         if (auth != null && auth.startsWith("Bearer ")) {
             token = auth.substring(7);
         }
@@ -54,6 +58,7 @@ public class AdminTokenInterceptor implements HandlerInterceptor {
     }
 
     /** 返回 401 统一 JSON，与原项目 Result 格式一致 */
+    //此处已赋值401所响应的JSON信息
     private boolean reject(HttpServletResponse response) throws Exception {
         Result result = ResultGenerator.genErrorResult(401, "未登录或Token已失效");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

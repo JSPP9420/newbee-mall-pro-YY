@@ -46,14 +46,14 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminLoginVO getAdminUserById(Integer adminUserId) {
-        AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
-        if (admin == null) {
+        AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
+        if (adminUser == null) {
             return null;
         }
         AdminLoginVO adminLoginVO = new AdminLoginVO();
-        adminLoginVO.setAdminUserId(admin.getAdminUserId());
-        adminLoginVO.setLoginUserName(admin.getLoginUserName());
-        adminLoginVO.setNickName(admin.getNickName());
+        adminLoginVO.setAdminUserId(adminUser.getAdminUserId());
+        adminLoginVO.setLoginUserName(adminUser.getLoginUserName());
+        adminLoginVO.setNickName(adminUser.getNickName());
         return adminLoginVO;
     }
 
