@@ -8,6 +8,8 @@
  */
 package ltd.newbee.mall.service;
 
+import ltd.newbee.mall.controller.dto.AdminNameUpdateDTO;
+import ltd.newbee.mall.controller.dto.AdminPasswordUpdateDTO;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
 import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.entity.AdminUser;
@@ -56,5 +58,21 @@ public interface AdminService {
      * @return
      */
     Boolean updateName(Integer adminUserId, String loginUserName, String nickName);
+
+    /**
+     * pro 版新增：REST 修改密码（业务校验在 Service 层）
+     * 校验规则：两次密码一致、新旧密码不同、原密码正确
+     * 修改成功后删除当前 Token，强制重新登录
+     *
+     * @param adminUserId 当前登录管理员
+     * @param dto         修改密码入参
+     * @param token       当前 Token（改密成功后删除）
+     */
+    void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto, String token);
+
+    /**
+     * pro 版新增：REST 修改登录名/昵称，返回更新后的管理员信息
+     */
+    AdminLoginVO updateName(Integer adminUserId, AdminNameUpdateDTO dto);
 
 }

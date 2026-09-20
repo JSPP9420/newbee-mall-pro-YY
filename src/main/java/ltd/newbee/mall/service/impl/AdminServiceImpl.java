@@ -10,6 +10,8 @@ package ltd.newbee.mall.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.common.NewBeeMallException;
+import ltd.newbee.mall.controller.dto.AdminNameUpdateDTO;
+import ltd.newbee.mall.controller.dto.AdminPasswordUpdateDTO;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
 import ltd.newbee.mall.entity.AdminUser;
 import ltd.newbee.mall.controller.vo.AdminLoginVO;
@@ -112,6 +114,35 @@ public class AdminServiceImpl implements AdminService {
         adminTokenMapper.insert(adminToken);
 
         return token;
+    }
+
+    @Override
+    public void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto, String token) {
+        // 跨字段校验（@Valid 只管单字段，管不了字段之间的关系）
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new NewBeeMallException("两次输入的密码不一致");
+        }
+        if (dto.getOriginalPassword().equals(dto.getNewPassword())) {
+            throw new NewBeeMallException("新密码不能与原密码相同");
+        }
+
+        // 复用原有校验逻辑（MD5 比对）
+        Boolean success = updatePassword(adminUserId, dto.getOriginalPassword(), dto.getNewPassword());
+        if (!success) {
+            throw new NewBeeMallException("原密码错误");
+        }
+
+        // 改密码后强制重新登录：删除当前 Token
+        adminTokenMapper.deleteByToken(token);
+    }
+
+    @Override
+    public AdminLoginVO updateName(Integer adminUserId, AdminNameUpdateDTO dto) {
+        Boolean success = updateName(adminUserId, dto.getLoginUserName(), dto.getNickName());
+        if (!success) {
+            throw new NewBeeMallException("修改失败");
+        }
+        return getAdminUserById(adminUserId);
     }
 
     //TODO此处以后看情况可以考虑一下逻辑删除，

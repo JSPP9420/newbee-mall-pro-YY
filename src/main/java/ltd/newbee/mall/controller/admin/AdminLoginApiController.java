@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.controller.dto.AdminPasswordUpdateDTO;
-import ltd.newbee.mall.controller.dto.AdminProfileUpdateDTO;
+import ltd.newbee.mall.controller.dto.AdminNameUpdateDTO;
 import ltd.newbee.mall.controller.dto.AdminUserLoginDTO;
 import ltd.newbee.mall.controller.vo.AdminLoginVO;
 import ltd.newbee.mall.service.AdminService;
@@ -93,71 +93,42 @@ public class AdminLoginApiController {
      *
      * 对比原项目 AdminController.passwordUpdate()：
      * - 页面版：从 Session 取 adminUserId，改成功后清 Session 强制重新登录
-     * - REST 版：从 request 取 adminUserId（拦截器放入），改成功后 Token 仍然有效
-     *   （如果想让改密码后强制重登，可以在这里删 Token）
+     * - REST 版：从 request 取 adminUserId（拦截器放入），业务校验在 Service，
+     *   改成功后由 Service 删除当前 Token 强制重新登录
      *
      * @PutMapping：RESTful 约定，PUT = 修改资源
      */
     @PutMapping("/password")
     public Result updatePassword(HttpServletRequest request,
                                  @Valid @RequestBody AdminPasswordUpdateDTO dto) {
-        Integer adminUserId = (Integer) request.getAttribute("adminUserId");
-        if (adminUserId == null) {
-            throw new NewBeeMallException("未登录");
-        }
-
-        // 两次密码一致性校验（@Valid 管不了跨字段逻辑）
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            throw new NewBeeMallException("两次输入的密码不一致");
-        }
-
-        // 新密码不能和原密码相同
-        if (dto.getOriginalPassword().equals(dto.getNewPassword())) {
-            throw new NewBeeMallException("新密码不能与原密码相同");
-        }
-
-        // 复用原项目的 Service 方法
-        Boolean success = adminService.updatePassword(
-                adminUserId, dto.getOriginalPassword(), dto.getNewPassword());
-        if (!success) {
-            // 原项目返回 false 可能是"原密码错误"或"用户不存在"，统一提示
-            throw new NewBeeMallException("原密码错误");
-        }
-
-        // 改密码后建议重新登录：删掉当前 Token，让前端重新走登录流程
-        String token = extractToken(request);
-        adminService.logoutByToken(token);
-
+        adminService.updatePassword(requireAdminUserId(request), dto, extractToken(request));
         return ResultGenerator.genSuccessResult();
     }
 
-    // ==================== 修改昵称/登录名 ====================
+    // ==================== 修改登录名/昵称 ====================
 
     /**
-     * 修改当前登录管理员的昵称和登录名
+     * 修改当前登录管理员的登录名和昵称，返回更新后的信息
      *
      * 对比原项目 AdminController.nameUpdate()：
      * - 页面版：从 Session 取 adminUserId，返回 "success"/"修改失败" 字符串
-     * - REST 版：从 request 取 adminUserId，失败抛异常（统一异常处理转 JSON）
-     *
-     * @PutMapping：修改资源用 PUT
+     * - REST 版：从 request 取 adminUserId，失败由 Service 抛异常（统一异常处理转 JSON）
      */
-    @PutMapping("/profile")
-    public Result<AdminLoginVO> updateProfile(HttpServletRequest request,
-                                               @Valid @RequestBody AdminProfileUpdateDTO dto) {
+    @PutMapping("/name")
+    public Result<AdminLoginVO> updateName(HttpServletRequest request,
+                                           @Valid @RequestBody AdminNameUpdateDTO dto) {
+        return ResultGenerator.genSuccessResult(adminService.updateName(requireAdminUserId(request), dto));
+    }
+
+    /**
+     * 取当前登录管理员 ID（Token 拦截器校验通过后放入 request）
+     * 拦截器与 Controller 解耦，不假设拦截器一定执行过，防御性判空
+     */
+    private Integer requireAdminUserId(HttpServletRequest request) {
         Integer adminUserId = (Integer) request.getAttribute("adminUserId");
         if (adminUserId == null) {
             throw new NewBeeMallException("未登录");
         }
-
-        // 复用原项目的 Service 方法
-        Boolean success = adminService.updateName(
-                adminUserId, dto.getLoginUserName(), dto.getNickName());
-        if (!success) {
-            throw new NewBeeMallException("修改失败");
-        }
-
-        // 返回更新后的管理员信息，前端可以直接刷新显示
-        return ResultGenerator.genSuccessResult(adminService.getAdminUserById(adminUserId));
+        return adminUserId;
     }
 }
