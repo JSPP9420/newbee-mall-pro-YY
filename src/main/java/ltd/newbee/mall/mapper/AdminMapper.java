@@ -27,6 +27,15 @@ public interface AdminMapper {
 
     AdminUser selectByPrimaryKey(Integer adminUserId);
 
+    /**
+     * pro 版新增：按登录名查管理员（含锁定状态过滤）
+     *
+     * 为什么需要它？原 login() 把密码比对放在 SQL 里（login_password = #{password}），
+     * 但 BCrypt 每次加密结果不同、无法在 SQL 里等值比对，
+     * 所以必须先按用户名查出整条记录，再在 Java 里用 PasswordEncoder.matches() 验证
+     */
+    AdminUser selectByLoginUserName(@Param("userName") String userName);
+
     int updateByPrimaryKeySelective(AdminUser record);
 
     int updateByPrimaryKey(AdminUser record);
