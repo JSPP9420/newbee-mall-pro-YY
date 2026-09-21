@@ -61,16 +61,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Boolean updatePassword(Integer adminUserId, String originalPassword, String newPassword) {
-        AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
+        AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
         //当前用户非空才可以进行更改
-        if (admin != null) {
+        if (adminUser != null) {
             String originalPasswordMd5 = MD5Util.MD5Encode(originalPassword, "UTF-8");
             String newPasswordMd5 = MD5Util.MD5Encode(newPassword, "UTF-8");
             //比较原密码是否正确
-            if (originalPasswordMd5.equals(admin.getLoginPassword())) {
+            if (originalPasswordMd5.equals(adminUser.getLoginPassword())) {
                 //设置新密码并修改
-                admin.setLoginPassword(newPasswordMd5);
-                if (adminMapper.updateByPrimaryKeySelective(admin) > 0) {
+                adminUser.setLoginPassword(newPasswordMd5);
+                if (adminMapper.updateByPrimaryKeySelective(adminUser) > 0) {
                     //修改成功则返回true
                     return true;
                 }
@@ -81,13 +81,13 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Boolean updateName(Integer adminUserId, String loginUserName, String nickName) {
-        AdminUser admin = adminMapper.selectByPrimaryKey(adminUserId);
+        AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
         //当前用户非空才可以进行更改
-        if (admin != null) {
+        if (adminUser != null) {
             //设置新名称并修改
-            admin.setLoginUserName(loginUserName);
-            admin.setNickName(nickName);
-            if (adminMapper.updateByPrimaryKeySelective(admin) > 0) {
+            adminUser.setLoginUserName(loginUserName);
+            adminUser.setNickName(nickName);
+            if (adminMapper.updateByPrimaryKeySelective(adminUser) > 0) {
                 //修改成功则返回true
                 return true;
             }
@@ -116,6 +116,11 @@ public class AdminServiceImpl implements AdminService {
         return token;
     }
 
+    /**
+     *一个字段变更后要不要删 Token，看它是否参与身份验证 :
+     * 参与验证的凭据（密码，严格说还有登录用户名）→ 变更 = 信任链断裂 → 必须删 Token，强制重新证明身份；
+     * 纯展示资料（昵称、头像等）→ 不影响验证链 → 不删，会话照常。
+     */
     @Override
     public void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto, String token) {
         // 跨字段校验（@Valid 只管单字段，管不了字段之间的关系）
@@ -125,6 +130,8 @@ public class AdminServiceImpl implements AdminService {
         if (dto.getOriginalPassword().equals(dto.getNewPassword())) {
             throw new NewBeeMallException("新密码不能与原密码相同");
         }
+
+        //TODO得改，重构MD5，尤其是public Boolean updateName方法
 
         // 复用原有校验逻辑（MD5 比对）
         Boolean success = updatePassword(adminUserId, dto.getOriginalPassword(), dto.getNewPassword());

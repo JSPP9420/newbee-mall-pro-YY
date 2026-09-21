@@ -12,6 +12,6 @@ public interface AdminTokenMapper {
     int insert(AdminToken adminToken);
 
     AdminToken selectByToken(@Param("token") String token);
-
+    //TODO此方法不够严谨，有待优化，我认为应该需要删除所有个人信息  或者  账号与密码。
     int deleteByToken(@Param("token") String token);
 }

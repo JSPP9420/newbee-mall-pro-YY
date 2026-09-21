@@ -24,6 +24,9 @@ public class AdminPasswordUpdateDTO {
     @Size(min = 6, max = 32, message = "密码长度需6-32位")
     private String newPassword;
 
+    /**
+     * 确认(的)密码
+     */
     @NotBlank(message = "确认密码不能为空")
     private String confirmPassword;
 }
