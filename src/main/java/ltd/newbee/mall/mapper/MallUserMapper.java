@@ -25,9 +25,6 @@ public interface MallUserMapper {
 
     MallUser selectByLoginName(String loginName);
 
-    MallUser selectByLoginNameForLogin(String loginName);
-    int updatePasswordHash(@Param("userId") Long userId,
-                           @Param("passwordHash") String passwordHash);
     int updateByPrimaryKeySelective(MallUser record);
 
     int updateByPrimaryKey(MallUser record);

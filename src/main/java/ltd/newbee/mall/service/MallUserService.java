@@ -10,7 +10,6 @@ package ltd.newbee.mall.service;
 
 import ltd.newbee.mall.controller.dto.MallUserUpdateDTO;
 import ltd.newbee.mall.controller.vo.MallUserVO;
-import ltd.newbee.mall.service.dto.UserLoginResult;
 import ltd.newbee.mall.util.PageQueryUtil;
 import ltd.newbee.mall.util.PageResult;
 
@@ -24,23 +23,21 @@ public interface MallUserService {
     PageResult getNewBeeMallUsersPage(PageQueryUtil pageUtil);
 
     /**
-     * 用户注册
+     * 用户注册（统一契约：失败必抛异常，异常消息即失败原因）
      *
      * @param loginName
      * @param password
-     * @return
      */
-    String register(String loginName, String password);
+    void register(String loginName, String password);
 
     /**
-     * 登录
+     * 登录（统一契约：失败必抛异常；成功返回用户信息）
      *
      * @param loginName
-     * @param passwordMD5
-     * @param httpSession
-     * @return
+     * @param password 明文密码
+     * @return 登录成功的用户信息（不含密码）
      */
-    UserLoginResult login(String loginName, String password);
+    MallUserVO login(String loginName, String password);
 
     /**
      * 用户信息修改并返回最新的用户信息

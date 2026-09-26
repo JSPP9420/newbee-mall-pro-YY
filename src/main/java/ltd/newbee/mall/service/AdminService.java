@@ -40,24 +40,22 @@ public interface AdminService {
     AdminLoginVO getAdminUserById(Integer adminUserId);
 
     /**
-     * 修改当前登录用户的密码
+     * 修改当前登录用户的密码（统一契约：失败必抛异常，异常消息即失败原因）
      *
      * @param adminUserId
      * @param originalPassword
      * @param newPassword
-     * @return
      */
-    Boolean updatePassword(Integer adminUserId, String originalPassword, String newPassword);
+    void updatePassword(Integer adminUserId, String originalPassword, String newPassword);
 
     /**
-     * 修改当前登录用户的名称信息
+     * 修改当前登录用户的名称信息（统一契约：失败必抛异常）
      *
      * @param adminUserId
      * @param loginUserName
      * @param nickName
-     * @return
      */
-    Boolean updateName(Integer adminUserId, String loginUserName, String nickName);
+    void updateName(Integer adminUserId, String loginUserName, String nickName);
 
     /**
      * pro 版新增：REST 修改密码（业务校验在 Service 层）

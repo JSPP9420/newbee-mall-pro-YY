@@ -20,7 +20,7 @@ public class MallUser {
 
     private String loginName;
 
-    private String passwordMd5;
+    private String loginPassword;
 
     private String introduceSign;
 

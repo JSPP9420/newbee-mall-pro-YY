@@ -108,15 +108,13 @@ public class AdminController {
             return "参数不能为空";
         }
         Integer adminUserId = (int) request.getSession().getAttribute("adminUserId");
-        if (adminService.updatePassword(adminUserId, originalPassword, newPassword)) {
-            //修改成功后清空session中的数据，前端控制跳转至登录页
-            request.getSession().removeAttribute("adminUserId");
-            request.getSession().removeAttribute("loginUser");
-            request.getSession().removeAttribute("errorMsg");
-            return ServiceResultEnum.SUCCESS.getResult();
-        } else {
-            return "修改失败";
-        }
+        //失败场景由 Service 抛异常，全局异常处理器统一返回；走到这里即成功
+        adminService.updatePassword(adminUserId, originalPassword, newPassword);
+        //修改成功后清空session中的数据，前端控制跳转至登录页
+        request.getSession().removeAttribute("adminUserId");
+        request.getSession().removeAttribute("loginUser");
+        request.getSession().removeAttribute("errorMsg");
+        return ServiceResultEnum.SUCCESS.getResult();
     }
 
     @PostMapping("/profile/name")
@@ -127,11 +125,9 @@ public class AdminController {
             return "参数不能为空";
         }
         Integer adminUserId = (int) request.getSession().getAttribute("adminUserId");
-        if (adminService.updateName(adminUserId, loginUserName, nickName)) {
-            return ServiceResultEnum.SUCCESS.getResult();
-        } else {
-            return "修改失败";
-        }
+        //失败场景由 Service 抛异常，全局异常处理器统一返回；走到这里即成功
+        adminService.updateName(adminUserId, loginUserName, nickName);
+        return ServiceResultEnum.SUCCESS.getResult();
     }
 
     @PostMapping("/logout")

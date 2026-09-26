@@ -8,6 +8,7 @@
  */
 package ltd.newbee.mall.service.impl;
 
+import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.controller.dto.MallUserUpdateDTO;
 import ltd.newbee.mall.controller.vo.MallUserAdminVO;
@@ -15,7 +16,6 @@ import ltd.newbee.mall.controller.vo.MallUserVO;
 import ltd.newbee.mall.mapper.MallUserMapper;
 import ltd.newbee.mall.entity.MallUser;
 import ltd.newbee.mall.service.MallUserService;
-import ltd.newbee.mall.service.dto.UserLoginResult;
 import ltd.newbee.mall.util.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,40 +44,37 @@ public class MallUserServiceImpl implements MallUserService {
     }
 
     @Override
-    public String register(String loginName, String password) {
+    public void register(String loginName, String password) {
         if (mallUserMapper.selectByLoginName(loginName) != null) {
-            return ServiceResultEnum.SAME_LOGIN_NAME_EXIST.getResult();
+            throw new NewBeeMallException("该登录名已存在");
         }
         MallUser registerUser = new MallUser();
         registerUser.setLoginName(loginName);
         registerUser.setNickName(loginName);
-        String passwordHash = passwordEncoder.encode(password);
-        registerUser.setPasswordMd5(passwordHash);
-        if (mallUserMapper.insertSelective(registerUser) > 0) {
-            return ServiceResultEnum.SUCCESS.getResult();
+        registerUser.setLoginPassword(passwordEncoder.encode(password));
+        if (mallUserMapper.insertSelective(registerUser) <= 0) {
+            throw new NewBeeMallException("注册失败，请稍后重试");
         }
-        return ServiceResultEnum.DB_ERROR.getResult();
     }
 
+    /**
+     * 登录（统一契约：失败必抛异常）
+     * 注意失败消息的顺序设计：
+     * - 用户不存在与密码错误统一提示"用户名或密码错误"（防账号枚举）
+     * - 锁定检查放在密码校验之后——密码不对时不能暴露"该账号存在且被锁定"
+     */
     @Override
-    public UserLoginResult login(String loginName, String password) {
-        MallUser user = mallUserMapper.selectByLoginNameForLogin(loginName);
+    public MallUserVO login(String loginName, String password) {
+        MallUser user = mallUserMapper.selectByLoginName(loginName);
         if (user == null) {
-            return UserLoginResult.failure(ServiceResultEnum.LOGIN_ERROR.getResult());
+            throw new NewBeeMallException("用户名或密码错误");
+        }
+        String storedPassword = user.getLoginPassword();
+        if (storedPassword == null || !passwordEncoder.matches(password, storedPassword)) {
+            throw new NewBeeMallException("用户名或密码错误");
         }
         if (user.getLockedFlag() == 1) {
-            return UserLoginResult.failure(ServiceResultEnum.LOGIN_USER_LOCKED.getResult());
-        }
-
-        String storedPassword = user.getPasswordMd5();
-        boolean passwordMatches = storedPassword != null
-                && (passwordEncoder.matches(password, storedPassword)
-                || MD5Util.MD5Encode(password, "UTF-8").equalsIgnoreCase(storedPassword));
-        if (!passwordMatches) {
-            return UserLoginResult.failure(ServiceResultEnum.LOGIN_ERROR.getResult());
-        }
-        if (storedPassword.length() == 32) {
-            mallUserMapper.updatePasswordHash(user.getUserId(), passwordEncoder.encode(password));
+            throw new NewBeeMallException(ServiceResultEnum.LOGIN_USER_LOCKED.getResult());
         }
 
         if (user.getNickName() != null && user.getNickName().length() > 7) {
@@ -85,7 +82,7 @@ public class MallUserServiceImpl implements MallUserService {
         }
         MallUserVO userVO = new MallUserVO();
         BeanUtil.copyProperties(user, userVO);
-        return UserLoginResult.success(userVO);
+        return userVO;
     }
 
     @Override

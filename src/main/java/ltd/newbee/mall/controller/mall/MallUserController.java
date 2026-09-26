@@ -15,7 +15,6 @@ import ltd.newbee.mall.controller.dto.MallUserUpdateDTO;
 import ltd.newbee.mall.controller.vo.MallUserVO;
 import ltd.newbee.mall.security.CsrfTokenService;
 import ltd.newbee.mall.service.MallUserService;
-import ltd.newbee.mall.service.dto.UserLoginResult;
 import ltd.newbee.mall.util.Result;
 import ltd.newbee.mall.util.ResultGenerator;
 import org.springframework.stereotype.Controller;
@@ -84,17 +83,13 @@ public class MallUserController {
         if (shearCaptcha == null || !shearCaptcha.verify(verifyCode)) {
             return ResultGenerator.genFailResult(ServiceResultEnum.LOGIN_VERIFY_CODE_ERROR.getResult());
         }
-        UserLoginResult loginResult = mallUserService.login(loginName, password);
-        //登录成功
-        if (ServiceResultEnum.SUCCESS.getResult().equals(loginResult.getResult())) {
-            request.changeSessionId();
-            httpSession.setAttribute(Constants.MALL_USER_SESSION_KEY, loginResult.getUser());
-            httpSession.removeAttribute(Constants.MALL_VERIFY_CODE_KEY);
-            CsrfTokenService.rotateToken(httpSession);
-            return ResultGenerator.genSuccessResult();
-        }
-        //登录失败
-        return ResultGenerator.genFailResult(loginResult.getResult());
+        // 失败由 Service 抛 NewBeeMallException，经全局异常处理器返回 JSON
+        MallUserVO loginUser = mallUserService.login(loginName, password);
+        request.changeSessionId();
+        httpSession.setAttribute(Constants.MALL_USER_SESSION_KEY, loginUser);
+        httpSession.removeAttribute(Constants.MALL_VERIFY_CODE_KEY);
+        CsrfTokenService.rotateToken(httpSession);
+        return ResultGenerator.genSuccessResult();
     }
 
     @PostMapping("/register")
@@ -116,15 +111,11 @@ public class MallUserController {
         if (shearCaptcha == null || !shearCaptcha.verify(verifyCode)) {
             return ResultGenerator.genFailResult(ServiceResultEnum.LOGIN_VERIFY_CODE_ERROR.getResult());
         }
-        String registerResult = mallUserService.register(loginName, password);
-        //注册成功
-        if (ServiceResultEnum.SUCCESS.getResult().equals(registerResult)) {
-            //删除session中的verifyCode
-            httpSession.removeAttribute(Constants.MALL_VERIFY_CODE_KEY);
-            return ResultGenerator.genSuccessResult();
-        }
-        //注册失败
-        return ResultGenerator.genFailResult(registerResult);
+        // 失败由 Service 抛 NewBeeMallException，经全局异常处理器返回 JSON
+        mallUserService.register(loginName, password);
+        //注册成功，删除session中的verifyCode
+        httpSession.removeAttribute(Constants.MALL_VERIFY_CODE_KEY);
+        return ResultGenerator.genSuccessResult();
     }
 
     @PostMapping("/personal/updateInfo")

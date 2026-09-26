@@ -5,7 +5,7 @@
         <id column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="nick_name" jdbcType="VARCHAR" property="nickName"/>
         <result column="login_name" jdbcType="VARCHAR" property="loginName"/>
-        <result column="password_md5" jdbcType="VARCHAR" property="passwordMd5"/>
+        <result column="login_password" jdbcType="VARCHAR" property="loginPassword"/>
         <result column="introduce_sign" jdbcType="VARCHAR" property="introduceSign"/>
         <result column="address" jdbcType="VARCHAR" property="address"/>
         <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
@@ -13,7 +13,7 @@
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
     </resultMap>
     <sql id="Base_Column_List">
-    user_id, nick_name, login_name, password_md5, introduce_sign, address, is_deleted, 
+    user_id, nick_name, login_name, login_password, introduce_sign, address, is_deleted,
     locked_flag, create_time
   </sql>
 
@@ -51,23 +51,17 @@
         from tb_newbee_mall_user
         where login_name = #{loginName} and is_deleted = 0
     </select>
-    <select id="selectByLoginNameForLogin" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List"/>
-        from tb_newbee_mall_user
-        where login_name = #{loginName} and is_deleted = 0
-    </select>
     <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
     update tb_newbee_mall_user set is_deleted = 1
     where user_id = #{userId,jdbcType=BIGINT} and is_deleted = 0
   </update>
     <insert id="insert" parameterType="ltd.newbee.mall.entity.MallUser">
-    insert into tb_newbee_mall_user (user_id, nick_name, login_name, 
-      password_md5, introduce_sign, address, 
+    insert into tb_newbee_mall_user (user_id, nick_name, login_name,
+      login_password, introduce_sign, address,
       is_deleted, locked_flag, create_time
       )
-    values (#{userId,jdbcType=BIGINT}, #{nickName,jdbcType=VARCHAR}, #{loginName,jdbcType=VARCHAR}, 
-      #{passwordMd5,jdbcType=VARCHAR}, #{introduceSign,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, 
+    values (#{userId,jdbcType=BIGINT}, #{nickName,jdbcType=VARCHAR}, #{loginName,jdbcType=VARCHAR},
+      #{loginPassword,jdbcType=VARCHAR}, #{introduceSign,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR},
       #{isDeleted,jdbcType=TINYINT}, #{lockedFlag,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}
       )
   </insert>
@@ -83,8 +77,8 @@
             <if test="loginName != null">
                 login_name,
             </if>
-            <if test="passwordMd5 != null">
-                password_md5,
+            <if test="loginPassword != null">
+                login_password,
             </if>
             <if test="introduceSign != null">
                 introduce_sign,
@@ -112,8 +106,8 @@
             <if test="loginName != null">
                 #{loginName,jdbcType=VARCHAR},
             </if>
-            <if test="passwordMd5 != null">
-                #{passwordMd5,jdbcType=VARCHAR},
+            <if test="loginPassword != null">
+                #{loginPassword,jdbcType=VARCHAR},
             </if>
             <if test="introduceSign != null">
                 #{introduceSign,jdbcType=VARCHAR},
@@ -132,12 +126,6 @@
             </if>
         </trim>
     </insert>
-    <update id="updatePasswordHash">
-        update tb_newbee_mall_user
-        set password_md5 = #{passwordHash,jdbcType=VARCHAR}
-        where user_id = #{userId,jdbcType=BIGINT}
-          and is_deleted = 0
-    </update>
 
     <update id="updateByPrimaryKeySelective" parameterType="ltd.newbee.mall.entity.MallUser">
         update tb_newbee_mall_user
@@ -148,8 +136,8 @@
             <if test="loginName != null">
                 login_name = #{loginName,jdbcType=VARCHAR},
             </if>
-            <if test="passwordMd5 != null">
-                password_md5 = #{passwordMd5,jdbcType=VARCHAR},
+            <if test="loginPassword != null">
+                login_password = #{loginPassword,jdbcType=VARCHAR},
             </if>
             <if test="introduceSign != null">
                 introduce_sign = #{introduceSign,jdbcType=VARCHAR},
@@ -173,7 +161,7 @@
     update tb_newbee_mall_user
     set nick_name = #{nickName,jdbcType=VARCHAR},
       login_name = #{loginName,jdbcType=VARCHAR},
-      password_md5 = #{passwordMd5,jdbcType=VARCHAR},
+      login_password = #{loginPassword,jdbcType=VARCHAR},
       introduce_sign = #{introduceSign,jdbcType=VARCHAR},
       address = #{address,jdbcType=VARCHAR},
       is_deleted = #{isDeleted,jdbcType=TINYINT},

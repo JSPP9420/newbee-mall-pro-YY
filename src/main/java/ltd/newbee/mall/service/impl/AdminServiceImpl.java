@@ -19,7 +19,6 @@ import ltd.newbee.mall.entity.AdminToken;
 import ltd.newbee.mall.mapper.AdminMapper;
 import ltd.newbee.mall.mapper.AdminTokenMapper;
 import ltd.newbee.mall.service.AdminService;
-import ltd.newbee.mall.util.MD5Util;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,15 +37,12 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * 登录：BCrypt 优先，MD5 兜底 + 懒升级（平滑迁移）
+     * 登录：纯 BCrypt 校验（MD5 兼容与懒升级已随存量数据迁移完成而移除）
      *
      * 为什么不能在 SQL 里比对密码？
      * 原项目 login() 是 WHERE login_password = #{md5}，等值比对。
      * 但 BCrypt 每次加密结果都不同（含随机盐），没法写等值 SQL，
      * 所以改为：先按用户名查出记录，再在 Java 里用 matches() 验证。
-     *
-     * 懒升级：库里还是 MD5 的老用户，用 MD5 验证通过后，
-     * 顺手把密码重写为 BCrypt 存回去——用户无感，登录几次后全部升级完毕
      */
     @Override
     public AdminUser login(String userName, String password) {
@@ -54,18 +50,7 @@ public class AdminServiceImpl implements AdminService {
         if (adminUser == null) {
             return null;
         }
-        String storedPassword = adminUser.getLoginPassword();
-        if (storedPassword != null && storedPassword.startsWith("$2")) {
-            // BCrypt 哈希以 $2 开头，直接验证
-            return passwordEncoder.matches(password, storedPassword) ? adminUser : null;
-        }
-        // 存量 MD5 密码：验证通过后懒升级为 BCrypt
-        if (MD5Util.MD5Encode(password, "UTF-8").equals(storedPassword)) {
-            adminUser.setLoginPassword(passwordEncoder.encode(password));
-            adminMapper.updateByPrimaryKeySelective(adminUser);
-            return adminUser;
-        }
-        return null;
+        return passwordEncoder.matches(password, adminUser.getLoginPassword()) ? adminUser : null;
     }
 
     @Override
@@ -87,47 +72,34 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Boolean updatePassword(Integer adminUserId, String originalPassword, String newPassword) {
+    public void updatePassword(Integer adminUserId, String originalPassword, String newPassword) {
         AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
-        //当前用户非空才可以进行更改
         if (adminUser == null) {
-            return false;
+            throw new NewBeeMallException("用户不存在");
         }
-        //验证原密码：BCrypt 优先，MD5 兜底（兼容未迁移的存量密码）
-        String storedPassword = adminUser.getLoginPassword();
-        boolean originalPasswordCorrect;
-        if (storedPassword != null && storedPassword.startsWith("$2")) {
-            originalPasswordCorrect = passwordEncoder.matches(originalPassword, storedPassword);
-        } else {
-            originalPasswordCorrect = MD5Util.MD5Encode(originalPassword, "UTF-8").equals(storedPassword);
+        //验证原密码（纯 BCrypt）
+        if (!passwordEncoder.matches(originalPassword, adminUser.getLoginPassword())) {
+            throw new NewBeeMallException("原密码错误");
         }
-        if (!originalPasswordCorrect) {
-            return false;
-        }
-        //新密码一律用 BCrypt 存储（即使原密码还是 MD5，改完就升级了）
+        //新密码用 BCrypt 存储
         adminUser.setLoginPassword(passwordEncoder.encode(newPassword));
-        return adminMapper.updateByPrimaryKeySelective(adminUser) > 0;
+        adminMapper.updateByPrimaryKeySelective(adminUser);
     }
 
     @Override
-    public Boolean updateName(Integer adminUserId, String loginUserName, String nickName) {
+    public void updateName(Integer adminUserId, String loginUserName, String nickName) {
         AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
-        //当前用户非空才可以进行更改
-        if (adminUser != null) {
-            //设置新名称并修改
-            adminUser.setLoginUserName(loginUserName);
-            adminUser.setNickName(nickName);
-            if (adminMapper.updateByPrimaryKeySelective(adminUser) > 0) {
-                //修改成功则返回true
-                return true;
-            }
+        if (adminUser == null) {
+            throw new NewBeeMallException("用户不存在");
         }
-        return false;
+        adminUser.setLoginUserName(loginUserName);
+        adminUser.setNickName(nickName);
+        adminMapper.updateByPrimaryKeySelective(adminUser);
     }
 
     @Override
     public String loginAndIssueToken(AdminUserLoginDTO dto) {
-        // 复用 login()：BCrypt 优先 + MD5 兜底懒升级 + locked=0 过滤
+        // 复用 login()：纯 BCrypt 校验 + locked=0 过滤
         AdminUser adminUser = login(dto.getUserName(), dto.getPassword());
         if (adminUser == null) {
             // 与原版页面登录的提示语保持一致
@@ -161,13 +133,8 @@ public class AdminServiceImpl implements AdminService {
             throw new NewBeeMallException("新密码不能与原密码相同");
         }
 
-        //TODO得改，重构MD5，尤其是public Boolean updateName方法
-
-        // 复用原有校验逻辑（MD5 比对）
-        Boolean success = updatePassword(adminUserId, dto.getOriginalPassword(), dto.getNewPassword());
-        if (!success) {
-            throw new NewBeeMallException("原密码错误");
-        }
+        // 核心校验与更新（失败直接抛异常：用户不存在/原密码错误）
+        updatePassword(adminUserId, dto.getOriginalPassword(), dto.getNewPassword());
 
         // 改密码后强制重新登录：删除当前 Token
         adminTokenMapper.deleteByToken(token);
@@ -175,10 +142,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminLoginVO updateName(Integer adminUserId, AdminNameUpdateDTO dto) {
-        Boolean success = updateName(adminUserId, dto.getLoginUserName(), dto.getNickName());
-        if (!success) {
-            throw new NewBeeMallException("修改失败");
-        }
+        updateName(adminUserId, dto.getLoginUserName(), dto.getNickName());
         return getAdminUserById(adminUserId);
     }
 
