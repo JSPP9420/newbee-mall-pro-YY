@@ -13,6 +13,7 @@ import ltd.newbee.mall.mapper.AdminPermissionMapper;
 import ltd.newbee.mall.interceptor.AdminLoginInterceptor;
 import ltd.newbee.mall.interceptor.AdminPermissionInterceptor;
 import ltd.newbee.mall.interceptor.AdminTokenInterceptor;
+import ltd.newbee.mall.interceptor.MallUserTokenInterceptor;
 import ltd.newbee.mall.interceptor.NewBeeMallCartNumberInterceptor;
 import ltd.newbee.mall.interceptor.NewBeeMallLoginInterceptor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -30,6 +31,7 @@ public class NeeBeeMallWebMvcConfigurer implements WebMvcConfigurer {
     private final NewBeeMallLoginInterceptor newBeeMallLoginInterceptor;
     private final NewBeeMallCartNumberInterceptor newBeeMallCartNumberInterceptor;
     private final AdminTokenInterceptor adminTokenInterceptor;
+    private final MallUserTokenInterceptor mallUserTokenInterceptor;
     private final ObjectProvider<AdminPermissionInterceptor> adminPermissionInterceptorProvider;
 
     public NeeBeeMallWebMvcConfigurer(
@@ -37,11 +39,13 @@ public class NeeBeeMallWebMvcConfigurer implements WebMvcConfigurer {
             NewBeeMallLoginInterceptor newBeeMallLoginInterceptor,
             NewBeeMallCartNumberInterceptor newBeeMallCartNumberInterceptor,
             AdminTokenInterceptor adminTokenInterceptor,
+            MallUserTokenInterceptor mallUserTokenInterceptor,
             ObjectProvider<AdminPermissionInterceptor> adminPermissionInterceptorProvider) {
         this.adminLoginInterceptor = adminLoginInterceptor;
         this.newBeeMallLoginInterceptor = newBeeMallLoginInterceptor;
         this.newBeeMallCartNumberInterceptor = newBeeMallCartNumberInterceptor;
         this.adminTokenInterceptor = adminTokenInterceptor;
+        this.mallUserTokenInterceptor = mallUserTokenInterceptor;
         this.adminPermissionInterceptorProvider = adminPermissionInterceptorProvider;
     }
 
@@ -57,6 +61,11 @@ public class NeeBeeMallWebMvcConfigurer implements WebMvcConfigurer {
         registry.addInterceptor(adminTokenInterceptor)
                 .addPathPatterns("/api/v1/admin/**")
                 .excludePathPatterns("/api/v1/admin/login");
+        // pro 版新增：用户端 REST API 的 Token 认证（/api/v1/mall/**，放行登录/注册接口）
+        registry.addInterceptor(mallUserTokenInterceptor)
+                .addPathPatterns("/api/v1/mall/**")
+                .excludePathPatterns("/api/v1/mall/login")
+                .excludePathPatterns("/api/v1/mall/register");
         // 添加一个拦截器，拦截以/admin为前缀的url路径（后台登陆拦截）
         registry.addInterceptor(adminLoginInterceptor)
                 .addPathPatterns("/admin/**")

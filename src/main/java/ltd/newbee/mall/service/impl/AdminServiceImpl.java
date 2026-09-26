@@ -37,25 +37,24 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * 登录：纯 BCrypt 校验（MD5 兼容与懒升级已随存量数据迁移完成而移除）
+     * 登录（统一契约：失败必抛异常）
      *
      * 为什么不能在 SQL 里比对密码？
      * 原项目 login() 是 WHERE login_password = #{md5}，等值比对。
      * 但 BCrypt 每次加密结果都不同（含随机盐），没法写等值 SQL，
      * 所以改为：先按用户名查出记录，再在 Java 里用 matches() 验证。
+     *
+     * 注意失败消息的顺序设计（与用户端 MallUserServiceImpl.login 同套路）：
+     * - 用户不存在与密码错误统一提示，防账号枚举
+     * - 锁定账号由 SQL 过滤 locked=0 实现，查不出来即同提示，不单独暴露锁定状态
      */
     @Override
     public AdminUser login(String userName, String password) {
         AdminUser adminUser = adminMapper.selectByLoginUserName(userName);
-        if (adminUser == null) {
-            return null;
+        if (adminUser == null || !passwordEncoder.matches(password, adminUser.getLoginPassword())) {
+            throw new NewBeeMallException("登录失败，请检查用户名和密码");
         }
-        return passwordEncoder.matches(password, adminUser.getLoginPassword()) ? adminUser : null;
-    }
-
-    @Override
-    public AdminUser getUserDetailById(Integer adminUserId) {
-        return adminMapper.selectByPrimaryKey(adminUserId);
+        return adminUser;
     }
 
     @Override
@@ -71,8 +70,10 @@ public class AdminServiceImpl implements AdminService {
         return adminLoginVO;
     }
 
-    @Override
-    public void updatePassword(Integer adminUserId, String originalPassword, String newPassword) {
+    /**
+     * 核心改密逻辑（供 REST 版 updatePassword 复用，统一契约：失败必抛异常）
+     */
+    private void updatePassword(Integer adminUserId, String originalPassword, String newPassword) {
         AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
         if (adminUser == null) {
             throw new NewBeeMallException("用户不存在");
@@ -86,8 +87,10 @@ public class AdminServiceImpl implements AdminService {
         adminMapper.updateByPrimaryKeySelective(adminUser);
     }
 
-    @Override
-    public void updateName(Integer adminUserId, String loginUserName, String nickName) {
+    /**
+     * 核心改名逻辑（供 REST 版 updateName 复用，统一契约：失败必抛异常）
+     */
+    private void updateName(Integer adminUserId, String loginUserName, String nickName) {
         AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
         if (adminUser == null) {
             throw new NewBeeMallException("用户不存在");
@@ -99,12 +102,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public String loginAndIssueToken(AdminUserLoginDTO dto) {
-        // 复用 login()：纯 BCrypt 校验 + locked=0 过滤
+        // 复用 login() 的统一契约：失败必抛异常（用户名或密码错误/账号锁定，防枚举统一提示）
         AdminUser adminUser = login(dto.getUserName(), dto.getPassword());
-        if (adminUser == null) {
-            // 与原版页面登录的提示语保持一致
-            throw new NewBeeMallException("登录失败，请检查用户名和密码");
-        }
 
         // 签发 Token：UUID 去横线，入库并设置 7 天过期
         String token = UUID.randomUUID().toString().replace("-", "");

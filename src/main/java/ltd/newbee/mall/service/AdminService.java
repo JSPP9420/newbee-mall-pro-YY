@@ -16,6 +16,14 @@ import ltd.newbee.mall.entity.AdminUser;
 
 public interface AdminService {
 
+    /**
+     * 登录（统一契约：失败必抛异常，异常消息即失败原因；成功返回管理员实体）
+     * 用户名不存在、密码错误、账号锁定统一提示，防账号枚举
+     *
+     * @param userName 登录用户名
+     * @param password 明文密码
+     * @return 登录成功的管理员实体
+     */
     AdminUser login(String userName, String password);
 
     /**
@@ -29,33 +37,7 @@ public interface AdminService {
      */
     void logoutByToken(String token);
 
-    /**
-     * 获取用户信息
-     *
-     * @param adminUserId
-     * @return
-     */
-    AdminUser getUserDetailById(Integer adminUserId);
-
     AdminLoginVO getAdminUserById(Integer adminUserId);
-
-    /**
-     * 修改当前登录用户的密码（统一契约：失败必抛异常，异常消息即失败原因）
-     *
-     * @param adminUserId
-     * @param originalPassword
-     * @param newPassword
-     */
-    void updatePassword(Integer adminUserId, String originalPassword, String newPassword);
-
-    /**
-     * 修改当前登录用户的名称信息（统一契约：失败必抛异常）
-     *
-     * @param adminUserId
-     * @param loginUserName
-     * @param nickName
-     */
-    void updateName(Integer adminUserId, String loginUserName, String nickName);
 
     /**
      * pro 版新增：REST 修改密码（业务校验在 Service 层）

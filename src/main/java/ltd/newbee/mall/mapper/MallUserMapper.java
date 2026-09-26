@@ -9,10 +9,6 @@
 package ltd.newbee.mall.mapper;
 
 import ltd.newbee.mall.entity.MallUser;
-import ltd.newbee.mall.util.PageQueryUtil;
-import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 public interface MallUserMapper {
     int deleteByPrimaryKey(Long userId);
@@ -28,10 +24,4 @@ public interface MallUserMapper {
     int updateByPrimaryKeySelective(MallUser record);
 
     int updateByPrimaryKey(MallUser record);
-
-    List<MallUser> findMallUserList(PageQueryUtil pageUtil);
-
-    int getTotalMallUsers(PageQueryUtil pageUtil);
-
-    int lockUserBatch(@Param("ids") Integer[] ids, @Param("lockStatus") int lockStatus);
 }

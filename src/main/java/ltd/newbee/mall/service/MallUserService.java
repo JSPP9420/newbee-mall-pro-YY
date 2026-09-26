@@ -8,20 +8,11 @@
  */
 package ltd.newbee.mall.service;
 
+import ltd.newbee.mall.controller.dto.MallUserLoginDTO;
 import ltd.newbee.mall.controller.dto.MallUserUpdateDTO;
 import ltd.newbee.mall.controller.vo.MallUserVO;
-import ltd.newbee.mall.util.PageQueryUtil;
-import ltd.newbee.mall.util.PageResult;
 
 public interface MallUserService {
-    /**
-     * 后台分页
-     *
-     * @param pageUtil
-     * @return
-     */
-    PageResult getNewBeeMallUsersPage(PageQueryUtil pageUtil);
-
     /**
      * 用户注册（统一契约：失败必抛异常，异常消息即失败原因）
      *
@@ -31,28 +22,29 @@ public interface MallUserService {
     void register(String loginName, String password);
 
     /**
-     * 登录（统一契约：失败必抛异常；成功返回用户信息）
-     *
-     * @param loginName
-     * @param password 明文密码
-     * @return 登录成功的用户信息（不含密码）
+     * pro 版新增：REST 登录，校验通过后签发 Token
+     * 失败必抛异常（复用内部 login() 的统一契约），成功只返回 token 字符串
      */
-    MallUserVO login(String loginName, String password);
+    String loginAndIssueToken(MallUserLoginDTO dto);
 
     /**
-     * 用户信息修改并返回最新的用户信息
+     * pro 版新增：REST 登出，删除 Token（幂等）
+     */
+    void logoutByToken(String token);
+
+    /**
+     * pro 版新增：按 userId 查用户信息（REST GET /info 用）
+     * 统一契约：用户不存在抛异常
+     */
+    MallUserVO getUserById(Long userId);
+
+    /**
+     * 修改用户资料（昵称/签名/收货地址，仅更新传入的非空字段）并返回最新用户信息
+     * 统一契约：用户不存在或更新失败必抛异常
      *
-     * @param mallUser
-     * @return
+     * @param userId     当前登录用户 ID
+     * @param updateDTO  待更新的资料字段
+     * @return 更新后的用户信息（不含密码）
      */
     MallUserVO updateUserInfo(Long userId, MallUserUpdateDTO updateDTO);
-
-    /**
-     * 用户禁用与解除禁用(0-未锁定 1-已锁定)
-     *
-     * @param ids
-     * @param lockStatus
-     * @return
-     */
-    Boolean lockUsers(Integer[] ids, int lockStatus);
 }

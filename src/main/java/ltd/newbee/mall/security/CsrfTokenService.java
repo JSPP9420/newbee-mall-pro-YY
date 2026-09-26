@@ -27,9 +27,4 @@ public final class CsrfTokenService {
         session.setAttribute(SESSION_ATTRIBUTE, token);
         return token;
     }
-
-    public static void rotateToken(HttpSession session) {
-        session.removeAttribute(SESSION_ATTRIBUTE);
-        getOrCreateToken(session);
-    }
 }
