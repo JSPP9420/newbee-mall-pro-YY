@@ -28,6 +28,7 @@ import ltd.newbee.mall.common.NewBeeMallException;
  * 2. 页面版：Session 认证；REST 版：Authorization: Bearer <token>，由 AdminTokenInterceptor 校验
  * 3. REST 版暂不做验证码（Session 版验证码存在 Session 里，纯 API 下不适用，后续单独做）
  */
+//TODO少了老板需要管理的会员管理，比如数据分析
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")

@@ -13,7 +13,7 @@ import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.controller.vo.NewBeeMallOrderDetailVO;
 import ltd.newbee.mall.controller.vo.NewBeeMallOrderPayVO;
-import ltd.newbee.mall.controller.vo.NewBeeMallShoppingCartItemVO;
+import ltd.newbee.mall.controller.vo.ShoppingCartItemVO;
 import ltd.newbee.mall.controller.vo.MallUserVO;
 import ltd.newbee.mall.service.NewBeeMallOrderService;
 import ltd.newbee.mall.service.NewBeeMallShoppingCartService;
@@ -84,7 +84,7 @@ public class OrderController {
             //无收货地址
             NewBeeMallException.fail(ServiceResultEnum.NULL_ADDRESS_ERROR.getResult());
         }
-        List<NewBeeMallShoppingCartItemVO> myShoppingCartItems = newBeeMallShoppingCartService.getMyShoppingCartItems(user.getUserId());
+        List<ShoppingCartItemVO> myShoppingCartItems = newBeeMallShoppingCartService.getMyShoppingCartItems(user.getUserId());
         if (CollectionUtils.isEmpty(myShoppingCartItems)) {
             //购物车中无数据则跳转至错误页
             NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());

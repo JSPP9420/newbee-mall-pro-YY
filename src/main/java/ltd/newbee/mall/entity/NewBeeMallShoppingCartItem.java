@@ -21,8 +21,6 @@ public class NewBeeMallShoppingCartItem {
 
     private Integer goodsCount;
 
-    private Byte isDeleted;
-
     private Date createTime;
 
     private Date updateTime;

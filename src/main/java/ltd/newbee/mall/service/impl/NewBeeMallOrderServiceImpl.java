@@ -199,21 +199,21 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
 
     @Override
     @Transactional
-    public String saveOrder(MallUserVO user, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems) {
+    public String saveOrder(MallUserVO user, List<ShoppingCartItemVO> myShoppingCartItems) {
         return saveOrder(user, myShoppingCartItems, null);
     }
 
     @Override
     @Transactional
-    public String saveOrder(MallUserVO user, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems,
+    public String saveOrder(MallUserVO user, List<ShoppingCartItemVO> myShoppingCartItems,
                             String requestToken) {
         validateOrderInput(user, myShoppingCartItems, requestToken);
         if (StringUtils.hasText(requestToken)
                 && newBeeMallOrderMapper.selectByRequestToken(user.getUserId(), requestToken) != null) {
             NewBeeMallException.fail(ServiceResultEnum.ORDER_GENERATE_ERROR.getResult());
         }
-        List<Long> itemIdList = myShoppingCartItems.stream().map(NewBeeMallShoppingCartItemVO::getCartItemId).collect(Collectors.toList());
-        List<Long> goodsIds = myShoppingCartItems.stream().map(NewBeeMallShoppingCartItemVO::getGoodsId).collect(Collectors.toList());
+        List<Long> itemIdList = myShoppingCartItems.stream().map(ShoppingCartItemVO::getCartItemId).collect(Collectors.toList());
+        List<Long> goodsIds = myShoppingCartItems.stream().map(ShoppingCartItemVO::getGoodsId).collect(Collectors.toList());
         List<NewBeeMallGoods> newBeeMallGoods = newBeeMallGoodsMapper.selectByPrimaryKeys(goodsIds);
         if (CollectionUtils.isEmpty(newBeeMallGoods) || newBeeMallGoods.stream().anyMatch(Objects::isNull)) {
             NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());
@@ -229,7 +229,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         }
         Map<Long, NewBeeMallGoods> newBeeMallGoodsMap = newBeeMallGoods.stream().collect(Collectors.toMap(NewBeeMallGoods::getGoodsId, Function.identity(), (entity1, entity2) -> entity1));
         //判断商品库存
-        for (NewBeeMallShoppingCartItemVO shoppingCartItemVO : myShoppingCartItems) {
+        for (ShoppingCartItemVO shoppingCartItemVO : myShoppingCartItems) {
             //查出的商品中不存在购物车中的这条关联商品数据，直接返回错误提醒
             if (!newBeeMallGoodsMap.containsKey(shoppingCartItemVO.getGoodsId())) {
                 NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());
@@ -275,7 +275,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
                 if (newBeeMallOrderMapper.insertSelective(newBeeMallOrder) > 0) {
                     //生成所有的订单项快照，并保存至数据库
                     List<NewBeeMallOrderItem> newBeeMallOrderItems = new ArrayList<>();
-                    for (NewBeeMallShoppingCartItemVO newBeeMallShoppingCartItemVO : myShoppingCartItems) {
+                    for (ShoppingCartItemVO newBeeMallShoppingCartItemVO : myShoppingCartItems) {
                         NewBeeMallOrderItem newBeeMallOrderItem = new NewBeeMallOrderItem();
                         //使用BeanUtil工具类将newBeeMallShoppingCartItemVO中的属性复制到newBeeMallOrderItem对象中
                         BeanUtil.copyProperties(newBeeMallShoppingCartItemVO, newBeeMallOrderItem);
@@ -299,7 +299,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
     }
 
     private void validateOrderInput(MallUserVO user,
-                                    List<NewBeeMallShoppingCartItemVO> shoppingCartItems,
+                                    List<ShoppingCartItemVO> shoppingCartItems,
                                     String requestToken) {
         if (user == null || user.getUserId() == null) {
             NewBeeMallException.fail(ServiceResultEnum.NO_PERMISSION_ERROR.getResult());
@@ -314,7 +314,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         if (CollectionUtils.isEmpty(shoppingCartItems)) {
             NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());
         }
-        for (NewBeeMallShoppingCartItemVO shoppingCartItem : shoppingCartItems) {
+        for (ShoppingCartItemVO shoppingCartItem : shoppingCartItems) {
             if (shoppingCartItem == null || shoppingCartItem.getCartItemId() == null || shoppingCartItem.getGoodsId() == null
                     || shoppingCartItem.getGoodsCount() == null) {
                 NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());
@@ -345,9 +345,9 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         return aggregatedRequests;
     }
 
-    private long calculateOrderPrice(List<NewBeeMallShoppingCartItemVO> shoppingCartItems) {
+    private long calculateOrderPrice(List<ShoppingCartItemVO> shoppingCartItems) {
         long totalPrice = 0;
-        for (NewBeeMallShoppingCartItemVO shoppingCartItem : shoppingCartItems) {
+        for (ShoppingCartItemVO shoppingCartItem : shoppingCartItems) {
             long linePrice = (long) shoppingCartItem.getGoodsCount() * shoppingCartItem.getSellingPrice();
             if (linePrice > Integer.MAX_VALUE || totalPrice > Integer.MAX_VALUE - linePrice) {
                 NewBeeMallException.fail(ServiceResultEnum.ORDER_PRICE_ERROR.getResult());

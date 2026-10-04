@@ -12,7 +12,7 @@ import ltd.newbee.mall.controller.dto.OrderUpdateDTO;
 import ltd.newbee.mall.controller.vo.NewBeeMallOrderDetailVO;
 import ltd.newbee.mall.controller.vo.NewBeeMallOrderItemVO;
 import ltd.newbee.mall.controller.vo.NewBeeMallOrderPayVO;
-import ltd.newbee.mall.controller.vo.NewBeeMallShoppingCartItemVO;
+import ltd.newbee.mall.controller.vo.ShoppingCartItemVO;
 import ltd.newbee.mall.controller.vo.MallUserVO;
 import ltd.newbee.mall.util.PageQueryUtil;
 import ltd.newbee.mall.util.PageResult;
@@ -67,10 +67,10 @@ public interface NewBeeMallOrderService {
      * @param myShoppingCartItems
      * @return
      */
-    String saveOrder(MallUserVO user, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems);
+    String saveOrder(MallUserVO user, List<ShoppingCartItemVO> myShoppingCartItems);
 
     String saveOrder(MallUserVO user,
-                     List<NewBeeMallShoppingCartItemVO> myShoppingCartItems,
+                     List<ShoppingCartItemVO> myShoppingCartItems,
                      String requestToken);
 
     /**

@@ -27,7 +27,7 @@ public interface NewBeeMallShoppingCartItemMapper {
 
     NewBeeMallShoppingCartItem selectByUserIdAndGoodsId(@Param("newBeeMallUserId") Long newBeeMallUserId, @Param("goodsId") Long goodsId);
 
-    List<NewBeeMallShoppingCartItem> selectByUserId(@Param("newBeeMallUserId") Long newBeeMallUserId, @Param("number") int number);
+    List<NewBeeMallShoppingCartItem> selectByUserId(@Param("userId") Long userId);
 
     int selectCountByUserId(Long newBeeMallUserId);
 

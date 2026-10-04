@@ -13,10 +13,11 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 购物车页面购物项VO
+ * 购物项 VO（原 NewBeeMallShoppingCartItemVO，pro 版重命名去掉 NewBeeMall 历史前缀）
+ * REST 版语义：返回完整商品名，展示裁剪（截断/省略号）由前端负责
  */
 @Data
-public class NewBeeMallShoppingCartItemVO implements Serializable {
+public class ShoppingCartItemVO implements Serializable {
 
     private Long cartItemId;
 

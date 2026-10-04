@@ -49,7 +49,7 @@ public class NewBeeMallExceptionHandler {
     @ExceptionHandler(NewBeeMallException.class)
     public Object handleBusinessException(NewBeeMallException exception,
                                           HttpServletRequest request) {
-        return response(500, exception.getMessage(), request);
+        return response(400, exception.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)

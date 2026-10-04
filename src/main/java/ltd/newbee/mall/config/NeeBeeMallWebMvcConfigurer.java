@@ -87,15 +87,13 @@ public class NeeBeeMallWebMvcConfigurer implements WebMvcConfigurer {
                 .excludePathPatterns("/register")
                 .excludePathPatterns("/login")
                 .excludePathPatterns("/logout");
-        // 商城页面登陆拦截
+        // 商城页面登陆拦截（购物车已 REST 化为 /api/v1/mall/cart，走 Token 拦截，此处移除 /shop-cart 配置）
         registry.addInterceptor(newBeeMallLoginInterceptor)
                 .excludePathPatterns("/admin/**")
                 .excludePathPatterns("/register")
                 .excludePathPatterns("/login")
                 .excludePathPatterns("/logout")
                 .addPathPatterns("/goods/detail/**")
-                .addPathPatterns("/shop-cart")
-                .addPathPatterns("/shop-cart/**")
                 .addPathPatterns("/saveOrder")
                 .addPathPatterns("/orders")
                 .addPathPatterns("/orders/**")            
