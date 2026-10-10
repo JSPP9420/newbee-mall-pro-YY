@@ -19,8 +19,10 @@ import ltd.newbee.mall.entity.AdminToken;
 import ltd.newbee.mall.mapper.AdminMapper;
 import ltd.newbee.mall.mapper.AdminTokenMapper;
 import ltd.newbee.mall.service.AdminService;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.UUID;
@@ -89,15 +91,37 @@ public class AdminServiceImpl implements AdminService {
 
     /**
      * 核心改名逻辑（供 REST 版 updateName 复用，统一契约：失败必抛异常）
+     *
+     * Token 吊销的边界条件（安全加固 #5）：
+     * - 只改昵称 → 不吊销 Token（纯展示资料，不参与身份验证链）
+     * - 改了登录名 → 吊销该管理员全部 Token（登录名参与身份验证链，变更 = 信任链断裂）
+     * 判断依据：更新前比较新旧登录名，避免"只改昵称也被踢下线"的误伤
      */
     private void updateName(Integer adminUserId, String loginUserName, String nickName) {
         AdminUser adminUser = adminMapper.selectByPrimaryKey(adminUserId);
         if (adminUser == null) {
             throw new NewBeeMallException("用户不存在");
         }
+        boolean loginNameChanged = !adminUser.getLoginUserName().equals(loginUserName);
+        if (loginNameChanged) {
+            // 重名预检查（给友好提示用）；锁定账号占用的登录名此处查不到
+            // （selectByLoginUserName 带 locked=0 过滤），漏网的由唯一索引兜底
+            if (adminMapper.selectByLoginUserName(loginUserName) != null) {
+                throw new NewBeeMallException("登录名已存在");
+            }
+        }
         adminUser.setLoginUserName(loginUserName);
         adminUser.setNickName(nickName);
-        adminMapper.updateByPrimaryKeySelective(adminUser);
+        try {
+            adminMapper.updateByPrimaryKeySelective(adminUser);
+        } catch (DuplicateKeyException e) {
+            // 兜底：撞 uk_login_user_name（预检查漏掉的锁定账号同名等场景），与购物车 V6 同套路
+            throw new NewBeeMallException("登录名已存在");
+        }
+        if (loginNameChanged) {
+            // 登录名是身份凭据，变更后吊销全部 Token，所有设备强制重新登录
+            adminTokenMapper.deleteByAdminUserId(adminUserId);
+        }
     }
 
     @Override
@@ -121,9 +145,14 @@ public class AdminServiceImpl implements AdminService {
      *一个字段变更后要不要删 Token，看它是否参与身份验证 :
      * 参与验证的凭据（密码，严格说还有登录用户名）→ 变更 = 信任链断裂 → 必须删 Token，强制重新证明身份；
      * 纯展示资料（昵称、头像等）→ 不影响验证链 → 不删，会话照常。
+     *
+     * 事务说明：改密码与吊销 Token 是两次写入（update + delete），无事务时各自独立提交，
+     * 吊销那步失败会出现"密码已改但旧会话全部有效"的中间态，安全语义最怕的窗口——
+     * 所以整个方法包进一个事务，要么都成功，要么都回滚
      */
     @Override
-    public void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto, String token) {
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto) {
         // 跨字段校验（@Valid 只管单字段，管不了字段之间的关系）
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             throw new NewBeeMallException("两次输入的密码不一致");
@@ -135,11 +164,16 @@ public class AdminServiceImpl implements AdminService {
         // 核心校验与更新（失败直接抛异常：用户不存在/原密码错误）
         updatePassword(adminUserId, dto.getOriginalPassword(), dto.getNewPassword());
 
-        // 改密码后强制重新登录：删除当前 Token
-        adminTokenMapper.deleteByToken(token);
+        // 改密码后强制重新登录：吊销该管理员全部 Token（不只当前设备）
+        adminTokenMapper.deleteByAdminUserId(adminUserId);
     }
 
+    /**
+     * 事务说明：改名（update）与登录名变化后的吊销 Token（delete）在同一事务，
+     * 防"登录名已改但旧会话全部仍有效"的中间态，与 updatePassword 同理
+     */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AdminLoginVO updateName(Integer adminUserId, AdminNameUpdateDTO dto) {
         updateName(adminUserId, dto.getLoginUserName(), dto.getNickName());
         return getAdminUserById(adminUserId);

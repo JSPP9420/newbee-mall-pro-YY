@@ -12,6 +12,16 @@ public interface AdminTokenMapper {
     int insert(AdminToken adminToken);
 
     AdminToken selectByToken(@Param("token") String token);
-    //TODO此方法不够严谨，有待优化，我认为应该需要删除所有个人信息  或者  账号与密码。
+
+    /**
+     * 按 Token 删除（登出/单个会话失效）
+     */
     int deleteByToken(@Param("token") String token);
+
+    /**
+     * 按管理员 ID 删除其全部 Token（安全兜底版#2）
+     * 凭据变更（改密码/改登录名）时吊销所有会话，不只是当前这台设备——
+     * 只删当前 Token 的话，其他设备登录的 Token 依然有效，等于"改了密码没被踢下线"
+     */
+    int deleteByAdminUserId(@Param("adminUserId") Integer adminUserId);
 }

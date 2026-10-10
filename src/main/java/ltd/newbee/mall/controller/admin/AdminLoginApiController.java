@@ -95,14 +95,14 @@ public class AdminLoginApiController {
      * 对比原项目 AdminController.passwordUpdate()：
      * - 页面版：从 Session 取 adminUserId，改成功后清 Session 强制重新登录
      * - REST 版：从 request 取 adminUserId（拦截器放入），业务校验在 Service，
-     *   改成功后由 Service 删除当前 Token 强制重新登录
+     *   改成功后由 Service 吊销该管理员全部 Token（所有设备强制重新登录）
      *
      * @PutMapping：RESTful 约定，PUT = 修改资源
      */
     @PutMapping("/password")
     public Result updatePassword(HttpServletRequest request,
                                  @Valid @RequestBody AdminPasswordUpdateDTO dto) {
-        adminService.updatePassword(requireAdminUserId(request), dto, extractToken(request));
+        adminService.updatePassword(requireAdminUserId(request), dto);
         return ResultGenerator.genSuccessResult();
     }
 
@@ -114,6 +114,9 @@ public class AdminLoginApiController {
      * 对比原项目 AdminController.nameUpdate()：
      * - 页面版：从 Session 取 adminUserId，返回 "success"/"修改失败" 字符串
      * - REST 版：从 request 取 adminUserId，失败由 Service 抛异常（统一异常处理转 JSON）
+     *
+     * Token 约定：登录名实际变化时 Service 吊销该管理员全部 Token，
+     * 本次响应虽返回成功，但当前 Token 已失效，前端应引导重新登录（与改密码同约定）
      */
     @PutMapping("/name")
     public Result<AdminLoginVO> updateName(HttpServletRequest request,

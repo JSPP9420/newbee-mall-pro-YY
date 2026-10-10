@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.controller.dto.MallUserLoginDTO;
+import ltd.newbee.mall.controller.dto.MallUserRegisterDTO;
 import ltd.newbee.mall.controller.dto.MallUserUpdateDTO;
 import ltd.newbee.mall.controller.vo.MallUserVO;
 import ltd.newbee.mall.service.MallUserService;
@@ -40,9 +41,10 @@ public class MallUserApiController {
     /**
      * 注册：成功即代表可登录，前端引导去登录页
      * 失败（登录名已存在等）由 Service 抛异常，经全局异常处理器返回
+     * 入参用 MallUserRegisterDTO（带强度校验），与登录 DTO 分离（安全加固 #6）
      */
     @PostMapping("/register")
-    public Result register(@Valid @RequestBody MallUserLoginDTO dto) {
+    public Result register(@Valid @RequestBody MallUserRegisterDTO dto) {
         mallUserService.register(dto.getLoginName(), dto.getPassword());
         return ResultGenerator.genSuccessResult();
     }

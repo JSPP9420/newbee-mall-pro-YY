@@ -31,4 +31,10 @@
     delete from tb_newbee_mall_admin_token
     where token = #{token,jdbcType=VARCHAR}
   </delete>
+
+  <!-- 按管理员 ID 吊销其全部 Token（改密码/改登录名时全设备下线） -->
+  <delete id="deleteByAdminUserId" parameterType="java.lang.Integer">
+    delete from tb_newbee_mall_admin_token
+    where admin_user_id = #{adminUserId,jdbcType=INTEGER}
+  </delete>
 </mapper>

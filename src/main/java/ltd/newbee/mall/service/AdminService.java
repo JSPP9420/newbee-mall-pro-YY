@@ -42,16 +42,18 @@ public interface AdminService {
     /**
      * pro 版新增：REST 修改密码（业务校验在 Service 层）
      * 校验规则：两次密码一致、新旧密码不同、原密码正确
-     * 修改成功后删除当前 Token，强制重新登录
+     * 修改成功后吊销该管理员全部 Token（所有设备强制重新登录），
+     * 只删当前 Token 会导致其他设备"改了密码没被踢下线"
      *
      * @param adminUserId 当前登录管理员
      * @param dto         修改密码入参
-     * @param token       当前 Token（改密成功后删除）
      */
-    void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto, String token);
+    void updatePassword(Integer adminUserId, AdminPasswordUpdateDTO dto);
 
     /**
      * pro 版新增：REST 修改登录名/昵称，返回更新后的管理员信息
+     * 登录名实际变化时吊销该管理员全部 Token（全设备强制重新登录）；
+     * 只改昵称不吊销（纯展示资料，不参与身份验证链）
      */
     AdminLoginVO updateName(Integer adminUserId, AdminNameUpdateDTO dto);
 
